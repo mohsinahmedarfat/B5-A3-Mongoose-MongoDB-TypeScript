@@ -1,7 +1,8 @@
 import { model, Schema } from "mongoose";
+import { IBooks } from "../interfaces/books.interface";
 
 // schema
-const bookSchema = new Schema({
+const bookSchema = new Schema<IBooks>({
   title: { type: String, require: true },
   author: { type: String, require: true },
   genre: {
@@ -26,4 +27,4 @@ const bookSchema = new Schema({
 });
 
 // model
-export const Book = model("book", bookSchema);
+export const Book = model<IBooks>("Book", bookSchema);
