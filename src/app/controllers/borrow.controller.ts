@@ -14,8 +14,21 @@ borrowRouter.post("/", async (req: Request, res: Response) => {
     data: borrowBook
   });
 });
+
 borrowRouter.get("/", async (req: Request, res: Response) => {
-    const borrowBooks = await Borrow.find().populate("book")
+    // const borrowBooks = await Borrow.find().populate("book")
+    const borrowBooks = await Borrow.aggregate([
+        {$match: {}},
+        {$lookup: {
+            from: "books",
+            localField: "book",
+            foreignField: "_id",
+            as: "book"
+        }},
+        {$unwind: "$book"},
+        {$project: {"book.title": 1, "book.isbn": 1}}
+        
+    ])
 
   res.status(201).json({
     success: true,
