@@ -38,8 +38,6 @@ bookSchema.pre("save", function (next) {
   } else {
     book.available = true;
   }
-
-  console.log(`📘 Saving book: "${book.title}" | Copies left: ${book.copies} | Available: ${book.available}`);
   next();
 });
 

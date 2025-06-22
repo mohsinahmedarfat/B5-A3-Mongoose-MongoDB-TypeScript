@@ -13,11 +13,11 @@ exports.Book = void 0;
 const mongoose_1 = require("mongoose");
 // schema
 const bookSchema = new mongoose_1.Schema({
-    title: { type: String, require: true },
-    author: { type: String, require: true },
+    title: { type: String, required: true },
+    author: { type: String, required: true },
     genre: {
         type: String,
-        require: true,
+        required: true,
         enum: [
             "FICTION",
             "NON_FICTION",
@@ -27,15 +27,27 @@ const bookSchema = new mongoose_1.Schema({
             "FANTASY",
         ],
     },
-    isbn: { type: String, require: true, unique: true },
+    isbn: { type: String, required: true, unique: true },
     description: String,
-    copies: { type: Number, require: true },
+    copies: { type: Number, required: true },
     available: { type: Boolean, default: true },
 }, {
     timestamps: true,
-    versionKey: false
+    versionKey: false,
 });
-// create Static method to handle borrowing logic
+// pre-save middleware
+bookSchema.pre("save", function (next) {
+    const book = this;
+    if (book.copies === 0) {
+        book.available = false;
+    }
+    else {
+        book.available = true;
+    }
+    console.log(`📘 Saving book: "${book.title}" | Copies left: ${book.copies} | Available: ${book.available}`);
+    next();
+});
+// Static method
 bookSchema.statics.borrowBook = function (bookId, quantity) {
     return __awaiter(this, void 0, void 0, function* () {
         const book = yield this.findById(bookId);
@@ -46,9 +58,6 @@ bookSchema.statics.borrowBook = function (bookId, quantity) {
             throw new Error("Not enough copies available to borrow");
         }
         book.copies -= quantity;
-        if (book.copies === 0) {
-            book.available = false;
-        }
         yield book.save();
         return book;
     });
