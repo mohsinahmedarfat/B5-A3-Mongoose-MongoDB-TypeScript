@@ -15,4 +15,11 @@ app.use("/api/borrow", borrow_controller_1.borrowRouter);
 app.get("/", (req, res) => {
     res.send("Welcome to Library Management app");
 });
+app.use((req, res) => {
+    res.status(404).json({
+        success: false,
+        message: "Route not found",
+        error: `Cannot ${req.method} ${req.originalUrl}`
+    });
+});
 exports.default = app;

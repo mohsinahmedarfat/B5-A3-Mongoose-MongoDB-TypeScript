@@ -22,15 +22,53 @@ exports.booksRouter.post("/", (req, res) => __awaiter(void 0, void 0, void 0, fu
     res.status(201).json({
         success: true,
         message: "Book created successfully",
-        data: book
+        data: book,
     });
 }));
 exports.booksRouter.get("/", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const books = yield books_model_1.Book.find();
+    console.log("req.query ->", req.query);
+    const filter = req.query.filter;
+    const limit = parseInt(req.query.limit) || 10;
+    const sortBy = req.query.sortBy || "createdAt";
+    const sortOrder = req.query.sort === "asc" ? 1 : -1;
+    // console.log("filter ->", filter);
+    // console.log("limit ->", limit);
+    // console.log("sortBy ->", sortBy);
+    // console.log("sortOrder ->", sortOrder);
+    let books;
+    if (filter && sortBy && sortOrder && limit) {
+        books = yield books_model_1.Book.find({ genre: filter })
+            .sort({ [sortBy]: sortOrder })
+            .limit(limit);
+    }
+    else if (filter && sortBy && sortOrder) {
+        books = yield books_model_1.Book.find({ genre: filter }).sort({ [sortBy]: sortOrder });
+    }
+    else if (filter && limit) {
+        books = yield books_model_1.Book.find({ genre: filter }).limit(limit);
+    }
+    else if (sortBy && sortOrder && limit) {
+        books = yield books_model_1.Book.find()
+            .sort({ [sortBy]: sortOrder })
+            .limit(limit);
+    }
+    else if (filter) {
+        books = yield books_model_1.Book.find({ genre: filter });
+    }
+    else if (sortBy && sortOrder) {
+        books = yield books_model_1.Book.find().sort({ [sortBy]: sortOrder });
+    }
+    else if (limit) {
+        books = yield books_model_1.Book.find().limit(limit);
+    }
+    else {
+        books = yield books_model_1.Book.find();
+    }
+    // const books = await Book.find()
     res.status(201).json({
         success: true,
         message: "Books retrieved successfully",
-        data: books
+        data: books,
     });
 }));
 exports.booksRouter.get("/:bookId", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -39,7 +77,7 @@ exports.booksRouter.get("/:bookId", (req, res) => __awaiter(void 0, void 0, void
     res.status(201).json({
         success: true,
         message: "Book retrieved successfully",
-        data: book
+        data: book,
     });
 }));
 exports.booksRouter.patch("/:bookId", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -49,7 +87,7 @@ exports.booksRouter.patch("/:bookId", (req, res) => __awaiter(void 0, void 0, vo
     res.status(201).json({
         success: true,
         message: "Book updated successfully",
-        data: book
+        data: book,
     });
 }));
 exports.booksRouter.delete("/:bookId", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -58,6 +96,6 @@ exports.booksRouter.delete("/:bookId", (req, res) => __awaiter(void 0, void 0, v
     res.status(201).json({
         success: true,
         message: "Book deleted successfully",
-        data: book
+        data: book,
     });
 }));
