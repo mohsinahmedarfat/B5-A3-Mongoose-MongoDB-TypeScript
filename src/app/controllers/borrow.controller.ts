@@ -1,24 +1,46 @@
 import express, { Request, Response } from "express";
 import { Borrow } from "../models/borrow.model";
+import { Book } from "../models/books.model";
 
 export const borrowRouter = express.Router();
 
 borrowRouter.post("/", async (req: Request, res: Response) => {
   const body = req.body;
+  const book = await Book.findById(body.book);
 
-  const borrowBook = await Borrow.create(body);
+  if (!book) {
+    return res.status(404).json({
+      success: false,
+      message: "Book not found",
+    });
+  }
 
-  res.status(201).json({
-    success: true,
-    message: "Book borrowed successfully",
-    data: borrowBook,
-  });
+  if (book.copies >= body.quantity) {
+    book.copies -= body.quantity;
+    await book.save();
+
+    if (book.copies === 0) {
+      book.available = false;
+      await book.save();
+    }
+
+    const borrowBook = await Borrow.create(body);
+
+    res.status(201).json({
+      success: true,
+      message: "Book borrowed successfully",
+      data: borrowBook,
+    });
+  } else {
+    res.status(400).json({
+      success: false,
+      message: "Not enough copies available to borrow",
+    });
+  }
 });
 
 borrowRouter.get("/", async (req: Request, res: Response) => {
-  // const borrowBooks = await Borrow.find().populate("book")
   const borrowBooks = await Borrow.aggregate([
-    { $match: {} },
     {
       $lookup: {
         from: "books",
@@ -36,17 +58,17 @@ borrowRouter.get("/", async (req: Request, res: Response) => {
     },
     {
       $project: {
-        book: {
-          title: "$_id.title",
-          isbn: "$_id.isbn",
-        },
         // book: {
-        //   _id: "$_id._id",
         //   title: "$_id.title",
-        //   copies: "$_id.copies",
-        //   available: "$_id.available",
-        //   quantity: "$_id.quantity",
+        //   isbn: "$_id.isbn",
         // },
+        book: {
+          _id: "$_id._id",
+          title: "$_id.title",
+          copies: "$_id.copies",
+          available: "$_id.available",
+          quantity: "$_id.quantity",
+        },
         totalQuantity: 1,
         _id: 0,
       },
