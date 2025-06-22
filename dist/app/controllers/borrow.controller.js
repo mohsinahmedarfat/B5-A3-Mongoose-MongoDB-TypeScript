@@ -38,36 +38,45 @@ exports.borrowRouter.post("/", (req, res) => __awaiter(void 0, void 0, void 0, f
     }
 }));
 exports.borrowRouter.get("/", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const borrowBooks = yield borrow_model_1.Borrow.aggregate([
-        {
-            $lookup: {
-                from: "books",
-                localField: "book",
-                foreignField: "_id",
-                as: "book",
-            },
-        },
-        { $unwind: "$book" },
-        {
-            $group: {
-                _id: "$book",
-                totalQuantity: { $sum: "$quantity" },
-            },
-        },
-        {
-            $project: {
-                book: {
-                    title: "$_id.title",
-                    isbn: "$_id.isbn",
+    try {
+        const borrowBooks = yield borrow_model_1.Borrow.aggregate([
+            {
+                $lookup: {
+                    from: "books",
+                    localField: "book",
+                    foreignField: "_id",
+                    as: "book",
                 },
-                totalQuantity: 1,
-                _id: 0,
             },
-        },
-    ]);
-    res.status(201).json({
-        success: true,
-        message: "Borrowed books summary retrieved successfully",
-        data: borrowBooks,
-    });
+            { $unwind: "$book" },
+            {
+                $group: {
+                    _id: "$book",
+                    totalQuantity: { $sum: "$quantity" },
+                },
+            },
+            {
+                $project: {
+                    book: {
+                        title: "$_id.title",
+                        isbn: "$_id.isbn",
+                    },
+                    totalQuantity: 1,
+                    _id: 0,
+                },
+            },
+        ]);
+        res.status(201).json({
+            success: true,
+            message: "Borrowed books summary retrieved successfully",
+            data: borrowBooks,
+        });
+    }
+    catch (error) {
+        res.status(400).json({
+            success: false,
+            message: "Error retrieving borrowed books summary",
+            error: error
+        });
+    }
 }));

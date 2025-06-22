@@ -2,31 +2,48 @@ import { Model, model, Schema } from "mongoose";
 import { IBooks } from "../interfaces/books.interface";
 
 // schema
-const bookSchema = new Schema<IBooks>({
-  title: { type: String, require: true },
-  author: { type: String, require: true },
-  genre: {
-    type: String,
-    require: true,
-    enum: [
-      "FICTION",
-      "NON_FICTION",
-      "SCIENCE",
-      "HISTORY",
-      "BIOGRAPHY",
-      "FANTASY",
-    ],
+const bookSchema = new Schema<IBooks>(
+  {
+    title: { type: String, required: true },
+    author: { type: String, required: true },
+    genre: {
+      type: String,
+      required: true,
+      enum: [
+        "FICTION",
+        "NON_FICTION",
+        "SCIENCE",
+        "HISTORY",
+        "BIOGRAPHY",
+        "FANTASY",
+      ],
+    },
+    isbn: { type: String, required: true, unique: true },
+    description: String,
+    copies: { type: Number, required: true },
+    available: { type: Boolean, default: true },
   },
-  isbn: { type: String, require: true, unique: true },
-  description: String,
-  copies: { type: Number, require: true },
-  available: { type: Boolean, default: true },
-}, {
+  {
     timestamps: true,
-    versionKey: false
+    versionKey: false,
+  }
+);
+
+// pre-save middleware
+bookSchema.pre("save", function (next) {
+  const book = this as IBooks;
+
+  if (book.copies === 0) {
+    book.available = false;
+  } else {
+    book.available = true;
+  }
+
+  console.log(`📘 Saving book: "${book.title}" | Copies left: ${book.copies} | Available: ${book.available}`);
+  next();
 });
 
-// create Static method to handle borrowing logic
+// Static method
 bookSchema.statics.borrowBook = async function (
   bookId: string,
   quantity: number
@@ -41,15 +58,11 @@ bookSchema.statics.borrowBook = async function (
   }
 
   book.copies -= quantity;
-
-  if (book.copies === 0) {
-    book.available = false;
-  }
-
-  await book.save();
+  await book.save(); 
   return book;
 };
 
+// Book model with static method 
 interface BookModel extends Model<IBooks> {
   borrowBook(bookId: string, quantity: number): Promise<IBooks>;
 }
