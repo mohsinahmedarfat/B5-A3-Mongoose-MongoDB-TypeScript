@@ -1,4 +1,4 @@
-import { model, Schema } from "mongoose";
+import { Model, model, Schema } from "mongoose";
 import { IBooks } from "../interfaces/books.interface";
 
 // schema
@@ -26,5 +26,32 @@ const bookSchema = new Schema<IBooks>({
     versionKey: false
 });
 
-// model
-export const Book = model<IBooks>("Book", bookSchema);
+// create Static method to handle borrowing logic
+bookSchema.statics.borrowBook = async function (
+  bookId: string,
+  quantity: number
+) {
+  const book = await this.findById(bookId);
+  if (!book) {
+    throw new Error("Book not found");
+  }
+
+  if (book.copies < quantity) {
+    throw new Error("Not enough copies available to borrow");
+  }
+
+  book.copies -= quantity;
+
+  if (book.copies === 0) {
+    book.available = false;
+  }
+
+  await book.save();
+  return book;
+};
+
+interface BookModel extends Model<IBooks> {
+  borrowBook(bookId: string, quantity: number): Promise<IBooks>;
+}
+
+export const Book = model<IBooks, BookModel>("Book", bookSchema);

@@ -5,24 +5,11 @@ import { Book } from "../models/books.model";
 export const borrowRouter = express.Router();
 
 borrowRouter.post("/", async (req: Request, res: Response) => {
-  const body = req.body;
-  const book = await Book.findById(body.book);
+  try {
+    const body = req.body;
 
-  if (!book) {
-    return res.status(404).json({
-      success: false,
-      message: "Book not found",
-    });
-  }
-
-  if (book.copies >= body.quantity) {
-    book.copies -= body.quantity;
-    await book.save();
-
-    if (book.copies === 0) {
-      book.available = false;
-      await book.save();
-    }
+    // static method
+    await Book.borrowBook(body.book, body.quantity);
 
     const borrowBook = await Borrow.create(body);
 
@@ -31,10 +18,11 @@ borrowRouter.post("/", async (req: Request, res: Response) => {
       message: "Book borrowed successfully",
       data: borrowBook,
     });
-  } else {
+  } catch (error: any) {
     res.status(400).json({
       success: false,
-      message: "Not enough copies available to borrow",
+      message: "Error borrowing book",
+      error: error.message
     });
   }
 });
@@ -58,16 +46,9 @@ borrowRouter.get("/", async (req: Request, res: Response) => {
     },
     {
       $project: {
-        // book: {
-        //   title: "$_id.title",
-        //   isbn: "$_id.isbn",
-        // },
         book: {
-          _id: "$_id._id",
           title: "$_id.title",
-          copies: "$_id.copies",
-          available: "$_id.available",
-          quantity: "$_id.quantity",
+          isbn: "$_id.isbn",
         },
         totalQuantity: 1,
         _id: 0,
