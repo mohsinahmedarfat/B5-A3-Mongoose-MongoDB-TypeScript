@@ -18,21 +18,10 @@ const borrow_model_1 = require("../models/borrow.model");
 const books_model_1 = require("../models/books.model");
 exports.borrowRouter = express_1.default.Router();
 exports.borrowRouter.post("/", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const body = req.body;
-    const book = yield books_model_1.Book.findById(body.book);
-    if (!book) {
-        return res.status(404).json({
-            success: false,
-            message: "Book not found",
-        });
-    }
-    if (book.copies >= body.quantity) {
-        book.copies -= body.quantity;
-        yield book.save();
-        if (book.copies === 0) {
-            book.available = false;
-            yield book.save();
-        }
+    try {
+        const body = req.body;
+        // static method
+        yield books_model_1.Book.borrowBook(body.book, body.quantity);
         const borrowBook = yield borrow_model_1.Borrow.create(body);
         res.status(201).json({
             success: true,
@@ -40,10 +29,11 @@ exports.borrowRouter.post("/", (req, res) => __awaiter(void 0, void 0, void 0, f
             data: borrowBook,
         });
     }
-    else {
+    catch (error) {
         res.status(400).json({
             success: false,
-            message: "Not enough copies available to borrow",
+            message: "Error borrowing book",
+            error: error.message
         });
     }
 }));
@@ -66,16 +56,9 @@ exports.borrowRouter.get("/", (req, res) => __awaiter(void 0, void 0, void 0, fu
         },
         {
             $project: {
-                // book: {
-                //   title: "$_id.title",
-                //   isbn: "$_id.isbn",
-                // },
                 book: {
-                    _id: "$_id._id",
                     title: "$_id.title",
-                    copies: "$_id.copies",
-                    available: "$_id.available",
-                    quantity: "$_id.quantity",
+                    isbn: "$_id.isbn",
                 },
                 totalQuantity: 1,
                 _id: 0,

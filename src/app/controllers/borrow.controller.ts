@@ -28,7 +28,8 @@ borrowRouter.post("/", async (req: Request, res: Response) => {
 });
 
 borrowRouter.get("/", async (req: Request, res: Response) => {
-  const borrowBooks = await Borrow.aggregate([
+  try {
+    const borrowBooks = await Borrow.aggregate([
     {
       $lookup: {
         from: "books",
@@ -61,4 +62,11 @@ borrowRouter.get("/", async (req: Request, res: Response) => {
     message: "Borrowed books summary retrieved successfully",
     data: borrowBooks,
   });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      message: "Error retrieving borrowed books summary",
+      error: error
+    });
+  }
 });
