@@ -30,14 +30,27 @@ const bookSchema = new Schema<IBooks>(
 );
 
 // pre-save middleware
-bookSchema.pre("save", function (next) {
-  const book = this as IBooks;
+// bookSchema.pre("save", function (next) {
+//   const book = this as IBooks;
 
-  if (book.copies === 0) {
-    book.available = false;
-  } else {
-    book.available = true;
+//   if (book.copies === 0) {
+//     book.available = false;
+//   } else {
+//     book.available = true;
+//   }
+//   next();
+// });
+
+bookSchema.pre("findOneAndUpdate", function (next) {
+  const update = this.getUpdate() as Partial<IBooks>;
+
+  if (update.copies === 0) {
+    update.available = false;
+  } else if (update.copies) {
+    update.available = true;
   }
+
+  this.setUpdate(update);
   next();
 });
 

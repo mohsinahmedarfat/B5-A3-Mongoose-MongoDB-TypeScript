@@ -4,14 +4,17 @@ import { Book } from "../models/books.model";
 
 export const borrowRouter = express.Router();
 
-borrowRouter.post("/", async (req: Request, res: Response) => {
+borrowRouter.post("/borrow/:bookId", async (req: Request, res: Response) => {
   try {
+
+    const bookId = req.params.bookId
     const body = req.body;
+    const bodyWithBookId = {book: bookId, ...body}
 
     // static method
-    await Book.borrowBook(body.book, body.quantity);
+    await Book.borrowBook(bookId, body.quantity);
 
-    const borrowBook = await Borrow.create(body);
+    const borrowBook = await Borrow.create(bodyWithBookId);
 
     res.status(201).json({
       success: true,
@@ -27,7 +30,7 @@ borrowRouter.post("/", async (req: Request, res: Response) => {
   }
 });
 
-borrowRouter.get("/", async (req: Request, res: Response) => {
+borrowRouter.get("/borrow-summary", async (req: Request, res: Response) => {
   try {
     const borrowBooks = await Borrow.aggregate([
     {

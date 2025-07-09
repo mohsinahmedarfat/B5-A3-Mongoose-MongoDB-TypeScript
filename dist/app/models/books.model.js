@@ -36,15 +36,24 @@ const bookSchema = new mongoose_1.Schema({
     versionKey: false,
 });
 // pre-save middleware
-bookSchema.pre("save", function (next) {
-    const book = this;
-    if (book.copies === 0) {
-        book.available = false;
+// bookSchema.pre("save", function (next) {
+//   const book = this as IBooks;
+//   if (book.copies === 0) {
+//     book.available = false;
+//   } else {
+//     book.available = true;
+//   }
+//   next();
+// });
+bookSchema.pre("findOneAndUpdate", function (next) {
+    const update = this.getUpdate();
+    if (update.copies === 0) {
+        update.available = false;
     }
-    else {
-        book.available = true;
+    else if (update.copies) {
+        update.available = true;
     }
-    console.log(`📘 Saving book: "${book.title}" | Copies left: ${book.copies} | Available: ${book.available}`);
+    this.setUpdate(update);
     next();
 });
 // Static method

@@ -17,12 +17,14 @@ const express_1 = __importDefault(require("express"));
 const borrow_model_1 = require("../models/borrow.model");
 const books_model_1 = require("../models/books.model");
 exports.borrowRouter = express_1.default.Router();
-exports.borrowRouter.post("/", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.borrowRouter.post("/borrow/:bookId", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        const bookId = req.params.bookId;
         const body = req.body;
+        const bodyWithBookId = Object.assign({ book: bookId }, body);
         // static method
-        yield books_model_1.Book.borrowBook(body.book, body.quantity);
-        const borrowBook = yield borrow_model_1.Borrow.create(body);
+        yield books_model_1.Book.borrowBook(bookId, body.quantity);
+        const borrowBook = yield borrow_model_1.Borrow.create(bodyWithBookId);
         res.status(201).json({
             success: true,
             message: "Book borrowed successfully",
@@ -37,7 +39,7 @@ exports.borrowRouter.post("/", (req, res) => __awaiter(void 0, void 0, void 0, f
         });
     }
 }));
-exports.borrowRouter.get("/", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.borrowRouter.get("/borrow-summary", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const borrowBooks = yield borrow_model_1.Borrow.aggregate([
             {

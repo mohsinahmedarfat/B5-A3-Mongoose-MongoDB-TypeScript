@@ -3,7 +3,7 @@ import { Book } from "../models/books.model";
 
 export const booksRouter = express.Router();
 
-booksRouter.post("/", async (req: Request, res: Response) => {
+booksRouter.post("/create-book", async (req: Request, res: Response) => {
   try {
     const body = req.body;
 
@@ -23,7 +23,7 @@ booksRouter.post("/", async (req: Request, res: Response) => {
   }
 });
 
-booksRouter.get("/", async (req: Request, res: Response) => {
+booksRouter.get("/books", async (req: Request, res: Response) => {
   try {
     const filter = req.query.filter as string;
     const limit = parseInt(req.query.limit as string) || 10;
@@ -66,10 +66,11 @@ booksRouter.get("/", async (req: Request, res: Response) => {
     });
   }
 });
-booksRouter.get("/:bookId", async (req: Request, res: Response) => {
+
+booksRouter.get("/books/:id", async (req: Request, res: Response) => {
   try {
-    const bookId = req.params.bookId;
-    const book = await Book.findById(bookId);
+    const id = req.params.id;
+    const book = await Book.findById(id);
 
     res.status(201).json({
       success: true,
@@ -84,11 +85,12 @@ booksRouter.get("/:bookId", async (req: Request, res: Response) => {
     });
   }
 });
-booksRouter.patch("/:bookId", async (req: Request, res: Response) => {
+
+booksRouter.patch("/edit-book/:id", async (req: Request, res: Response) => {
   try {
-    const bookId = req.params.bookId;
+    const id = req.params.id;
     const updatedBody = req.body;
-    const book = await Book.findByIdAndUpdate(bookId, updatedBody, {
+    const book = await Book.findByIdAndUpdate(id, updatedBody, {
       new: true,
     });
 
@@ -105,10 +107,11 @@ booksRouter.patch("/:bookId", async (req: Request, res: Response) => {
     });
   }
 });
-booksRouter.delete("/:bookId", async (req: Request, res: Response) => {
+
+booksRouter.delete("/books/:id", async (req: Request, res: Response) => {
   try {
-    const bookId = req.params.bookId;
-    const book = await Book.findByIdAndDelete(bookId);
+    const id = req.params.id;
+    const book = await Book.findByIdAndDelete(id);
 
     res.status(201).json({
       success: true,
