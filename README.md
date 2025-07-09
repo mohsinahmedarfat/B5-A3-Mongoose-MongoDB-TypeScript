@@ -29,11 +29,11 @@ A RESTful API built with **Node.js**, **Express**, **Mongoose**, and **TypeScrip
 ### Books API
 | Method | Endpoint         | Description                                 |
 | ------ | ---------------- | ------------------------------------------- |
-| POST   | `/api/books`         | Create a new book                           |
-| GET    | `/api/books`         | Retrieve all books (with filter, sort, etc) |
-| GET    | `/api/books/:bookId` | Retrieve a specific book by ID              |
-| PATCH  | `/api/books/:bookId` | Update a book by ID                         |
-| DELETE | `/api/books/:bookId` | Delete a book by ID                         |
+| POST   | `/create-book`         | Create a new book                           |
+| GET    | `/books`         | Retrieve all books (with filter, sort, etc) |
+| GET    | `/books/:id` | Retrieve a specific book by ID              |
+| PATCH  | `/edit-book/:id` | Update a book by ID                         |
+| DELETE | `/books/:id` | Delete a book by ID                         |
 
 ### Query Parameters for GET `/books`
 
@@ -53,8 +53,8 @@ GET /api/books?filter=FANTASY&sortBy=createdAt&sort=desc&limit=5
 
 | Method | Endpoint  | Description                                     |
 | ------ | --------- | ----------------------------------------------- |
-| POST   | `/api/borrow` | Borrow a book (`bookId`, `quantity`, `dueDate`) |
-| GET    | `/api/borrow` | Get total borrowed quantity per book            |
+| POST   | `/borrow/:bookId` | Borrow a book (`bookId`, `quantity`, `dueDate`) |
+| GET    | `/borrow-summary` | Get total borrowed quantity per book            |
 
 
 >  When borrowing a book, the available `copies` are automatically updated. If the stock reaches `0`, `available` is set to `false`.
